@@ -19,13 +19,13 @@ app.use(session({
     cookie: { maxAge: 24 * 60 * 60 * 1000 } // Sesi aktif selama 1 hari
 }));
 
-// ================= CONNECTION POOL (SUDAH FIXED ANTI-CRASH) =================
+// ================= CONNECTION POOL (AUTO-SWITCH RAILWAY VS LOCALHOST) =================
 const db = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',      
-    password: process.env.DB_PASSWORD || '',      
-    database: process.env.DB_NAME || 'uang-kas-digital',
-    port: process.env.DB_PORT || 3306,
+    host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
+    user: process.env.MYSQLUSER || process.env.DB_USER || 'root',      
+    password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || '',      
+    database: process.env.MYSQLDATABASE || process.env.DB_NAME || 'uang-kas-digital',
+    port: process.env.MYSQLPORT || process.env.DB_PORT || 3306,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
@@ -175,5 +175,5 @@ app.get('/api/ekspor-csv', checkAuth, (req, res) => {
     });
 });
 
-// ================= PERBAIKAN PENTING: MENAMBAHKAN HOST '0.0.0.0' AGAR MENERIMA KONEKSI RAILWAY =================
+// Binding host '0.0.0.0' agar port bisa dibuka oleh Railway untuk publik
 app.listen(PORT, '0.0.0.0', () => console.log(`Server aktif di port: ${PORT}`));
