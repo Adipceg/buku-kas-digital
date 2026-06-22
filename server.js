@@ -5,7 +5,8 @@ const session = require('express-session');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+// Menggunakan port dinamis dari Railway, jika tidak ada baru pakai 3000
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -18,18 +19,20 @@ app.use(session({
     cookie: { maxAge: 24 * 60 * 60 * 1000 } // Sesi aktif selama 1 hari
 }));
 
-// Koneksi Database XAMPP
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',      
-    password: '',      
-    database: 'uang-kas-digital'
+// ================= PERBAIKAN UTAMA: CONNECTION POOL ANTI-CLOSED STATE =================
+// Menggunakan createPool agar otomatis menjaga koneksi tetap hidup ke Clever Cloud/Local
+const db = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',      
+    password: process.env.DB_PASSWORD || '',      
+    database: process.env.DB_NAME || 'uang-kas-digital',
+    port: process.env.DB_PORT || 3306,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
-db.connect((err) => {
-    if (err) return console.error('Gagal koneksi MySQL:', err);
-    console.log('Mantap! Database terhubung.');
-});
+console.log('Mantap! Connection Pool Database sudah disiapkan.');
 
 // Middleware untuk proteksi halaman/API kas (Harus Login)
 const checkAuth = (req, res, next) => {
@@ -129,7 +132,7 @@ app.delete('/api/kas/:id', checkAuth, (req, res) => {
     });
 });
 
-// ================= API EKSPOR DATA KAS KE EXCEL / XLS (METODE ANTI-GAGAL TOTAL) =================
+// ================= API EKSPOR DATA KAS KE EXCEL / XLS =================
 
 app.get('/api/ekspor-csv', checkAuth, (req, res) => {
     const sql = 'SELECT DATE_FORMAT(tanggal, "%Y-%m-%d") AS tanggal, kategori, keterangan, tipe, jumlah FROM kas_transaksi WHERE user_id = ? ORDER BY tanggal DESC';
@@ -137,7 +140,6 @@ app.get('/api/ekspor-csv', checkAuth, (req, res) => {
     db.query(sql, [req.session.userId], (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
 
-        // Membuat format HTML Table asli agar Excel dipaksa membagi kolom ke kotak grid secara rapi
         let htmlContent = `
         <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
         <head><meta charset="utf-8"></head>
@@ -167,7 +169,6 @@ app.get('/api/ekspor-csv', checkAuth, (req, res) => {
         </body>
         </html>`;
 
-        // Atur ekstensi file output sebagai .xls agar langsung dikenali sebagai Excel Spreadsheet murni
         res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');
         res.setHeader('Content-Disposition', 'attachment; filename=Laporan_Buku_Kas_Digital.xls');
         
@@ -175,4 +176,4 @@ app.get('/api/ekspor-csv', checkAuth, (req, res) => {
     });
 });
 
-app.listen(PORT, () => console.log(`Server aktif di http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`Server aktif di port: ${PORT}`));
