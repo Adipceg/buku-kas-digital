@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buku Kas Digital Premium</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Library Ekspor PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Library Grafik Analitik Modern -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .transition-theme { transition: all 0.3s ease-in-out; }
+    </style>
+</head>
+<body id="main-body" class="transition-theme min-h-screen font-sans antialiased bg-slate-900 text-slate-200">
+
+    <!-- NAVBAR ATAS -->
+    <header id="main-header" class="transition-theme border-b sticky top-0 z-50 px-6 py-4 shadow-md bg-slate-800/90 border-slate-700/80 backdrop-blur-md">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            
+            <!-- Sisi Kiri: Logo Judul -->
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-lg shadow-indigo-950/40">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2" /></svg>
+                </div>
+                <h1 id="logo-title" class="text-xl font-bold text-white tracking-tight">BukuKas<span class="text-indigo-400">Digital</span></h1>
+            </div>
+            
+            <!-- Sisi Kanan: Pilihan Mode + Jam + Profil -->
+            <div class="flex flex-wrap items-center gap-4 w-full sm:w-auto justify-end">
+                
+                <!-- FITUR SWITCH 3 THEME MODE (SIANG, SORE, MALAM) -->
+                <div class="flex bg-black/20 p-1 rounded-xl border border-slate-700/60 items-center gap-1 no-print id-theme-box">
+                    <button onclick="changeThemeMode('siang')" id="btn-mode-siang" title="Mode Siang" class="p-2 rounded-lg transition-all text-slate-400 hover:text-amber-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707.707M6.343 6.343l.707.707M12 7a5 5 0 100 10 5 5 0 000-10z" /></svg>
+                    </button>
+                    <button onclick="changeThemeMode('sore')" id="btn-mode-sore" title="Mode Sore Senja" class="p-2 rounded-lg transition-all text-slate-400 hover:text-orange-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707.707M6.343 6.343l.707.707" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 17a5 5 0 005-5H7a5 5 0 005 5z" /></svg>
+                    </button>
+                    <button onclick="changeThemeMode('malam')" id="btn-mode-malam" title="Mode Malam" class="p-2 rounded-lg transition-all text-slate-400 hover:text-indigo-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                    </button>
+                </div>
+
+                <!-- Live Clock Nyata -->
+                <div class="text-right hidden md:block">
+                    <p id="live-clock" class="text-sm font-semibold text-slate-300"></p>
+                    <p id="clock-sub" class="text-xs text-slate-500 font-medium tracking-wide">Waktu Real-Time</p>
+                </div>
+                
+                <div id="divider-line" class="h-8 w-px bg-slate-700 hidden md:block"></div>
+
+                <!-- Avatar Profil (Klik Lingkaran Bulat Untuk Upload Foto) -->
+                <div id="profile-box" class="flex items-center gap-3 bg-slate-700/50 p-1.5 pr-4 rounded-full border border-slate-600/60 no-print">
+                    <input type="file" id="avatar-input" accept="image/*" class="hidden" onchange="uploadAvatar(this)">
+                    
+                    <div onclick="document.getElementById('avatar-input').click()" title="Klik untuk upload foto profil asli" class="h-9 w-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-inner uppercase overflow-hidden cursor-pointer hover:opacity-90 transition relative group">
+                        <span id="avatar-text">U</span>
+                        <img id="avatar-img" class="h-full w-full object-cover hidden" alt="Profile">
+                        <div class="absolute inset-0 bg-black/50 items-center justify-center hidden group-hover:flex">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </div>
+                    </div>
+                    <div class="text-left">
+                        <p id="user-display" class="text-xs font-bold text-slate-200 max-w-[130px] truncate">Memuat...</p>
+                        <button onclick="logout()" class="text-[10px] text-red-400 font-extrabold hover:underline block leading-tight mt-0.5">Keluar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-6">
+
+        <!-- NAVIGASI MENU TAB KATEGORI KECIL -->
+        <div id="tab-box" class="transition-theme bg-slate-800/40 p-2 rounded-2xl shadow-lg border border-slate-700/50 flex flex-wrap gap-1.5">
+            <button onclick="switchKategori('Semua')" id="tab-Semua" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-indigo-600 text-white shadow-md">🌍 Semua Gabungan</button>
+            <button onclick="switchKategori('Warung / Toko')" id="tab-Warung / Toko" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold text-slate-400 hover:bg-slate-800 hover:text-white transition-all">🏪 Warung / Toko</button>
+            <button onclick="switchKategori('Tagihan Listrik')" id="tab-Tagihan Listrik" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold text-slate-400 hover:bg-slate-800 hover:text-white transition-all">⚡ Tagihan Listrik</button>
+            <button onclick="switchKategori('Anak Kos')" id="tab-Anak Kos" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold text-slate-400 hover:bg-slate-800 hover:text-white transition-all">🛏️ Anak Kos</button>
+            <button onclick="switchKategori('Kebutuhan Pribadi')" id="tab-Kebutuhan Pribadi" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold text-slate-400 hover:bg-slate-800 hover:text-white transition-all">👤 Pribadi</button>
+            <button onclick="switchKategori('Umum')" id="tab-Umum" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold text-slate-400 hover:bg-slate-800 hover:text-white transition-all">📦 Umum</button>
+        </div>
+
+        <!-- AREA EXPORT LAPORAN -->
+        <div id="laporan-cetak-area" class="space-y-6">
+            
+            <!-- Judul Cetak PDF Dinamis Personal Akun -->
+            <div class="hidden print-header bg-white p-6 border-b-2 border-slate-800 text-slate-900">
+                <h2 class="text-2xl font-black text-center uppercase tracking-wide text-indigo-700">Laporan Uang Kas Digital <span id="pdf-user-display"></span></h2>
+                <p class="text-center text-slate-600 text-sm mt-1 font-semibold" id="pdf-subtitle">Kategori Pembukuan: Semua Gabungan</p>
+                <p class="text-center text-slate-400 text-xs mt-0.5" id="pdf-timestamp"></p>
+            </div>
+
+            <!-- KOTAK DATA RINGKASAN SALDO -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="theme-card transition-theme bg-slate-800 p-5 rounded-2xl border border-slate-700/60 shadow-md flex items-center justify-between">
+                    <div>
+                        <p class="theme-muted-text text-xs font-bold uppercase tracking-wider text-slate-400">Total Pemasukan</p>
+                        <h3 id="total-pemasukan" class="text-xl font-extrabold text-emerald-400 mt-1">Rp 0</h3>
+                    </div>
+                    <span class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl font-bold text-sm">↑</span>
+                </div>
+                <div class="theme-card transition-theme bg-slate-800 p-5 rounded-2xl border border-slate-700/60 shadow-md flex items-center justify-between">
+                    <div>
+                        <p class="theme-muted-text text-xs font-bold uppercase tracking-wider text-slate-400">Total Pengeluaran</p>
+                        <h3 id="total-pengeluaran" class="text-xl font-extrabold text-rose-400 mt-1">Rp 0</h3>
+                    </div>
+                    <span class="p-2.5 bg-rose-500/10 text-rose-400 rounded-xl font-bold text-sm">↓</span>
+                </div>
+                <div class="theme-card transition-theme bg-slate-800 p-5 rounded-2xl border border-slate-700/60 shadow-md flex items-center justify-between">
+                    <div>
+                        <p class="theme-muted-text text-xs font-bold uppercase tracking-wider text-slate-400">Sisa Saldo Kas</p>
+                        <h3 id="sisa-saldo" class="text-xl font-extrabold text-indigo-400 mt-1">Rp 0</h3>
+                    </div>
+                    <span class="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-xl font-bold text-sm">═</span>
+                </div>
+            </div>
+
+            <!-- BARIS GRAPH & BUDGET LIMIT ALARM -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 no-print">
+                <!-- FITUR GRAFIK ANALITIK -->
+                <div class="theme-card transition-theme bg-slate-800 p-5 rounded-2xl border border-slate-700/60 shadow-md">
+                    <h3 class="theme-main-text font-bold text-sm mb-2 flex items-center gap-1.5">📊 Visualisasi Analitik Finansial</h3>
+                    <div class="relative h-44 w-full flex justify-center items-center">
+                        <canvas id="kasChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- BUDGET LIMITER ALARM -->
+                <div class="theme-card transition-theme bg-slate-800 p-5 rounded-2xl border border-slate-700/60 shadow-md flex flex-col justify-between">
+                    <div>
+                        <h3 class="theme-main-text font-bold text-sm mb-1">⚠️ Batas Anggaran Bulanan (Budget)</h3>
+                        <p class="text-xs text-slate-400 mb-3">Set limit pengeluaran untuk akun aktif ini</p>
+                        <div class="flex gap-2 mb-4">
+                            <input type="number" id="input-budget" placeholder="Input Limit Target (Rp)" class="theme-input p-2 w-full border border-slate-600 rounded-xl bg-slate-700 text-white text-xs focus:outline-none">
+                            <button onclick="saveBudgetLimit()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700 shadow active:scale-95 transition">Pasang</button>
+                        </div>
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between text-xs font-bold">
+                                <span class="theme-main-text">Status Anggaran Terpakai:</span>
+                                <span id="budget-status-text">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-700 rounded-full h-3 overflow-hidden border border-slate-600/30">
+                                <div id="budget-bar" class="bg-emerald-500 h-3 transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p id="budget-alert-msg" class="text-xs font-extrabold text-emerald-400 mt-3 leading-tight">Anggaran aman terkendali 👍</p>
+                </div>
+            </div>
+
+            <!-- TABEL TRANSAKSI UTAMA -->
+            <div id="table-box" class="theme-card transition-theme bg-slate-800 rounded-2xl shadow-lg border border-slate-700/60 overflow-hidden">
+                <div id="table-header-box" class="p-5 border-b border-slate-700/60 flex flex-col sm:flex-row justify-between items-center bg-slate-800/50 gap-4">
+                    <h2 class="font-bold text-slate-200 text-base flex items-center gap-2">
+                        <span class="theme-main-text">📋 Record Finansial - </span>
+                        <span id="label-kategori-aktif" class="text-indigo-300 bg-indigo-500/10 px-2.5 py-0.5 rounded-md text-sm font-extrabold">Semua Gabungan</span>
+                    </h2>
+                    
+                    <!-- KELOMPOK TOMBOL UNDUH DOKUMEN -->
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end no-print">
+                       <button onclick="window.location.href='/api/ekspor-csv'" class="bg-emerald-700 hover:bg-emerald-600 border border-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5 active:scale-95">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            Ekspor Excel / CSV
+                        </button>
+                        
+                        <button onclick="exportLaporanPDF()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5 active:scale-95">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                            Cetak PDF Laporan
+                        </button>
+                    </div>
+                </div>
+                <!-- Div class pembungkus table ini diatur dinamis di JS saat print -->
+                <div id="table-scroll-wrapper" class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr id="thead-row" class="bg-slate-700/40 border-b border-slate-700 text-slate-400 text-xs font-bold uppercase tracking-wider">
+                                <th class="p-4">Tanggal</th>
+                                <th class="p-4">Akun Jenis</th>
+                                <th class="p-4">Keterangan</th>
+                                <th class="p-4">Tipe</th>
+                                <th class="p-4">Jumlah</th>
+                                <th class="p-4 text-center no-print">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kas-table-body" class="text-sm divide-y divide-slate-700/60 text-slate-300">
+                            <!-- JS Injected Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- FORM INPUT DATA -->
+        <div id="form-box" class="theme-card transition-theme bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700/60">
+            <h2 id="form-title" class="theme-main-text text-base font-bold text-slate-200 mb-4 flex items-center gap-2">
+                <span class="h-2 w-2 rounded-full bg-indigo-400"></span> Tambah Data Baru
+            </h2>
+            <form id="kas-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <input type="hidden" id="trans-id">
+                
+                <div class="flex flex-col gap-1">
+                    <label class="theme-muted-text text-xs font-bold text-slate-400 uppercase">Tanggal</label>
+                    <input type="date" id="tanggal" required class="theme-input p-2.5 border border-slate-600 rounded-xl bg-slate-700 text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-theme">
+                </div>
+                
+                <div class="flex flex-col gap-1">
+                    <label class="theme-muted-text text-xs font-bold text-slate-400 uppercase">Pilih Akun</label>
+                    <select id="kategori" class="theme-input p-2.5 border border-slate-600 rounded-xl bg-slate-700 text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-theme font-semibold">
+                        <option value="Warung / Toko">🏪 Warung / Toko</option>
+                        <option value="Tagihan Listrik">⚡ Tagihan Listrik</option>
+                        <option value="Anak Kos">🛏️ Anak Kos</option>
+                        <option value="Kebutuhan Pribadi">👤 Kebutuhan Pribadi</option>
+                        <option value="Umum">📦 Umum / Lainnya</option>
+                    </select>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="theme-muted-text text-xs font-bold text-slate-400 uppercase">Keterangan</label>
+                    <input type="text" id="keterangan" placeholder="Keterangan transaksi" required class="theme-input p-2.5 border border-slate-600 rounded-xl bg-slate-700 text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-theme">
+                </div>
+                
+                <div class="flex flex-col gap-1">
+                    <label class="theme-muted-text text-xs font-bold text-slate-400 uppercase">Tipe</label>
+                    <select id="tipe" class="theme-input p-2.5 border border-slate-600 rounded-xl bg-slate-700 text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-theme font-semibold">
+                        <option value="pemasukan" class="text-emerald-400">📈 Pemasukan</option>
+                        <option value="pengeluaran" class="text-rose-400">📉 Pengeluaran</option>
+                    </select>
+                </div>
+                
+                <div class="flex flex-col gap-1">
+                    <label class="theme-muted-text text-xs font-bold text-slate-400 uppercase">Jumlah Nominal</label>
+                    <input type="number" id="jumlah" placeholder="Rp" required class="theme-input p-2.5 border border-slate-600 rounded-xl bg-slate-700 text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-theme">
+                </div>
+                
+                <div class="sm:col-span-2 lg:col-span-5 flex justify-end gap-2 mt-2">
+                    <button type="button" id="btn-batal" class="bg-slate-700 text-slate-300 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-600 transition hidden">Batal Edit</button>
+                    <button type="submit" class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-indigo-700 transition active:scale-95">Simpan Catatan</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        const form = document.getElementById('kas-form');
+        const tableBody = document.getElementById('kas-table-body');
+        const formTitle = document.getElementById('form-title');
+        const btnBatal = document.getElementById('btn-batal');
+        
+        const txtPemasukan = document.getElementById('total-pemasukan');
+        const txtPengeluaran = document.getElementById('total-pengeluaran');
+        const txtSaldo = document.getElementById('sisa-saldo');
+        
+        let currentData = [];
+        let kategoriAktif = 'Semua';
+        let currentUserEmail = '';
+        let activeTheme = 'malam'; 
+        let myChartInstance = null; 
+
+        // 1. SWITCH MODE TEMA (SIANG, SORE, MALAM)
+        function changeThemeMode(mode) {
+            activeTheme = mode;
+            localStorage.setItem('user_theme_pref', mode);
+
+            const body = document.getElementById('main-body');
+            const header = document.getElementById('main-header');
+            const logoTitle = document.getElementById('logo-title');
+            const liveClock = document.getElementById('live-clock');
+            const clockSub = document.getElementById('clock-sub');
+            const divider = document.getElementById('divider-line');
+            const profileBox = document.getElementById('profile-box');
+            const userDisplay = document.getElementById('user-display');
+            const tabBox = document.getElementById('tab-box');
+            const formTitle = document.getElementById('form-title');
+            const cards = document.querySelectorAll('.theme-card');
+            const tableHeaderBox = document.getElementById('table-header-box');
+            const theadRow = document.getElementById('thead-row');
+            const labels = document.querySelectorAll('.theme-muted-text');
+            const inputs = document.querySelectorAll('.theme-input');
+
+            document.querySelectorAll('.id-theme-box button').forEach(b => {
+                b.className = "p-2 rounded-lg transition-all text-slate-400 hover:bg-slate-700/40";
+            });
+
+            if (mode === 'siang') {
+                document.getElementById('btn-mode-siang').className = "p-2 rounded-lg transition-all bg-amber-500 text-white shadow-sm";
+                body.className = "transition-theme min-h-screen font-sans antialiased bg-slate-50 text-slate-800";
+                header.className = "transition-theme border-b sticky top-0 z-50 px-6 py-4 shadow-sm bg-white border-slate-200 text-slate-800";
+                logoTitle.className = "text-xl font-bold text-slate-900 tracking-tight";
+                liveClock.className = "text-sm font-semibold text-slate-700";
+                clockSub.className = "text-xs text-slate-400 font-medium";
+                divider.className = "h-8 w-px bg-slate-200 hidden md:block";
+                profileBox.className = "flex items-center gap-3 bg-slate-100 p-1.5 pr-4 rounded-full border border-slate-200 no-print";
+                userDisplay.className = "text-xs font-bold text-slate-800 max-w-[130px] truncate";
+                tabBox.className = "transition-theme bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap gap-1.5";
+                formTitle.className = "text-base font-bold text-slate-800 mb-4 flex items-center gap-2";
+                cards.forEach(c => c.className = "theme-card transition-theme bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between");
+                document.getElementById('table-box').className = "theme-card transition-theme bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden";
+                document.getElementById('form-box').className = "theme-card transition-theme bg-white p-6 rounded-2xl shadow-sm border border-slate-200";
+                tableHeaderBox.className = "p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center bg-slate-50/50 gap-4";
+                theadRow.className = "bg-slate-100 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase tracking-wider";
+                labels.forEach(l => l.className = "theme-muted-text text-xs font-bold text-slate-400 uppercase");
+                inputs.forEach(i => i.className = "theme-input p-2.5 border border-slate-300 rounded-xl bg-slate-50 text-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-theme");
+            } else if (mode === 'sore') {
+                document.getElementById('btn-mode-sore').className = "p-2 rounded-lg transition-all bg-orange-500 text-white shadow-sm";
+                body.className = "transition-theme min-h-screen font-sans antialiased bg-orange-50/70 text-amber-950";
+                header.className = "transition-theme border-b sticky top-0 z-50 px-6 py-4 shadow-sm bg-orange-100 border-orange-200/80 text-amber-950";
+                logoTitle.className = "text-xl font-bold text-amber-900 tracking-tight";
+                liveClock.className = "text-sm font-semibold text-amber-900";
+                clockSub.className = "text-xs text-orange-600/70 font-medium";
+                divider.className = "h-8 w-px bg-orange-200 hidden md:block";
+                profileBox.className = "flex items-center gap-3 bg-orange-200/40 p-1.5 pr-4 rounded-full border border-orange-200 no-print";
+                userDisplay.className = "text-xs font-bold text-amber-950 max-w-[130px] truncate";
+                tabBox.className = "transition-theme bg-orange-100/50 p-2 rounded-2xl shadow-sm border border-orange-200/70 flex flex-wrap gap-1.5";
+                formTitle.className = "text-base font-bold text-amber-900 mb-4 flex items-center gap-2";
+                cards.forEach(c => c.className = "theme-card transition-theme bg-white p-5 rounded-2xl border border-orange-200/60 shadow-sm flex items-center justify-between");
+                document.getElementById('table-box').className = "theme-card transition-theme bg-white rounded-2xl shadow-sm border border-orange-200/60 overflow-hidden";
+                document.getElementById('form-box').className = "theme-card transition-theme bg-white p-6 rounded-2xl shadow-sm border border-orange-200/60";
+                tableHeaderBox.className = "p-5 border-b border-orange-100 flex flex-col sm:flex-row justify-between items-center bg-slate-50/50 gap-4";
+                theadRow.className = "bg-orange-100 border-b border-orange-200 text-amber-800 text-xs font-bold uppercase tracking-wider";
+                labels.forEach(l => l.className = "theme-muted-text text-xs font-bold text-orange-700/70 uppercase");
+                inputs.forEach(i => i.className = "theme-input p-2.5 border border-orange-200 rounded-xl bg-orange-50/40 text-amber-950 text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none transition-theme");
+            } else { 
+                document.getElementById('btn-mode-malam').className = "p-2 rounded-lg transition-all bg-indigo-600 text-white shadow-md";
+                body.className = "transition-theme min-h-screen font-sans antialiased bg-slate-900 text-slate-200";
+                header.className = "transition-theme border-b sticky top-0 z-50 px-6 py-4 shadow-md bg-slate-800/90 border-slate-700/80 backdrop-blur-md";
+                logoTitle.className = "text-xl font-bold text-white tracking-tight";
+                liveClock.className = "text-sm font-semibold text-slate-300";
+                clockSub.className = "text-xs text-slate-500 font-medium";
+                divider.className = "h-8 w-px bg-slate-700 hidden md:block";
+                profileBox.className = "flex items-center gap-3 bg-slate-700/50 p-1.5 pr-4 rounded-full border border-slate-600/60 no-print";
+                userDisplay.className = "text-xs font-bold text-slate-200 max-w-[130px] truncate";
+                tabBox.className = "transition-theme bg-slate-800/40 p-2 rounded-2xl shadow-lg border border-slate-700/50 flex flex-wrap gap-1.5";
+                formTitle.className = "text-base font-bold text-slate-200 mb-4 flex items-center gap-2";
+                cards.forEach(c => c.className = "theme-card transition-theme bg-slate-800 p-5 rounded-2xl border border-slate-700/60 shadow-md flex items-center justify-between");
+                document.getElementById('table-box').className = "theme-card transition-theme bg-slate-800 rounded-2xl shadow-lg border border-slate-700/60 overflow-hidden";
+                document.getElementById('form-box').className = "theme-card transition-theme bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700/60";
+                tableHeaderBox.className = "p-5 border-b border-slate-700/60 flex flex-col sm:flex-row justify-between items-center bg-slate-800/50 gap-4";
+                theadRow.className = "bg-slate-700/40 border-b border-slate-700 text-slate-400 text-xs font-bold uppercase tracking-wider";
+                labels.forEach(l => l.className = "theme-muted-text text-xs font-bold text-slate-400 uppercase");
+                inputs.forEach(i => i.className = "theme-input p-2.5 border border-slate-600 rounded-xl bg-slate-700 text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-theme");
+            }
+            renderData();
+        }
+
+        // 2. LIVE CLOCK
+        function startLiveClock() {
+            const clockEl = document.getElementById('live-clock');
+            setInterval(() => {
+                const sekarang = new Date();
+                const opsiTanggal = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const tglString = sekarang.toLocaleDateString('id-ID', opsiTanggal);
+                const jamString = sekarang.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                clockEl.innerText = `${tglString} | ${jamString} WIB`;
+            }, 1000);
+        }
+
+        // 3. GRAFIK ANALITIK (CHART.JS)
+        function refreshFinancialChart(dataFiltered) {
+            const ctx = document.getElementById('kasChart').getContext('2d');
+            if (myChartInstance) { myChartInstance.destroy(); } 
+
+            let labels = [];
+            let datasetValues = [];
+            let backgroundColors = [];
+
+            if (kategoriAktif === 'Semua') {
+                let mapKategori = {};
+                dataFiltered.forEach(item => {
+                    if (item.tipe === 'pengeluaran') {
+                        mapKategori[item.kategori] = (mapKategori[item.kategori] || 0) + item.jumlah;
+                    }
+                });
+                labels = Object.keys(mapKategori);
+                datasetValues = Object.values(mapKategori);
+                backgroundColors = ['#6366f1', '#f59e0b', '#ec4899', '#3b82f6', '#10b981'];
+
+                if (labels.length === 0) {
+                    labels = ['Belum Ada Pengeluaran'];
+                    datasetValues = [1];
+                    backgroundColors = ['#94a3b8'];
+                }
+            } else {
+                let masuk = 0, keluar = 0;
+                dataFiltered.forEach(item => {
+                    if (item.tipe === 'pemasukan') masuk += item.jumlah;
+                    else keluar += item.jumlah;
+                });
+                labels = ['📈 Pemasukan', '📉 Pengeluaran'];
+                datasetValues = [masuk, keluar];
+                backgroundColors = ['#10b981', '#ef4444'];
+            }
+
+            let fontColor = '#cbd5e1';
+            if (activeTheme === 'siang') fontColor = '#334155';
+            if (activeTheme === 'sore') fontColor = '#451a03';
+
+            myChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{ data: datasetValues, backgroundColor: backgroundColors, borderWidth: 0 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: fontColor, font: { size: 10, weight: 'bold' } } }
+                    }
+                }
+            });
+        }
+
+        // 4. BUDGET LIMITER
+        function checkAndRenderBudget(totalKeluar) {
+            const inputBudget = document.getElementById('input-budget');
+            const bar = document.getElementById('budget-bar');
+            const txtStatus = document.getElementById('budget-status-text');
+            const txtMsg = document.getElementById('budget-alert-msg');
+
+            const storageKey = `budget_${currentUserEmail}_${kategoriAktif}`;
+            const currentLimit = localStorage.getItem(storageKey) || 0;
+
+            inputBudget.value = currentLimit > 0 ? currentLimit : '';
+
+            if (!currentLimit || currentLimit == 0) {
+                bar.style.width = '0%';
+                txtStatus.innerText = 'Limit Belum Di-set';
+                txtMsg.innerText = 'Silakan pasang limit anggaran agar keuangan terkontrol 💸';
+                txtMsg.className = 'text-xs font-bold text-slate-400';
+                bar.className = 'h-3 transition-all duration-500 bg-slate-500';
+                return;
+            }
+
+            const persen = Math.round((totalKeluar / currentLimit) * 100);
+            txtStatus.innerText = `${persen}% (${totalKeluar.toLocaleString('id-ID')} / ${parseInt(currentLimit).toLocaleString('id-ID')})`;
+
+            bar.style.width = `${Math.min(persen, 100)}%`;
+
+            if (persen >= 100) {
+                bar.className = 'h-3 transition-all duration-500 bg-rose-500 animate-pulse';
+                txtMsg.innerText = '⚠️ ANGGARAN JEBOL! Pengeluaran melebihi batas limit! Rem dulu, Kawan!';
+                txtMsg.className = 'text-xs font-extrabold text-rose-400';
+            } else if (persen >= 80) {
+                bar.className = 'h-3 transition-all duration-500 bg-amber-500';
+                txtMsg.innerText = '⚡ SIAGA! Anggaran menipis, sudah terpakai di atas 80%! Hati-hati!';
+                txtMsg.className = 'text-xs font-extrabold text-amber-400';
+            } else {
+                bar.className = 'h-3 transition-all duration-500 bg-emerald-500';
+                txtMsg.innerText = 'Anggaran aman terkendali, pengeluaran terkontrol dengan baik 👍';
+                txtMsg.className = 'text-xs font-bold text-emerald-400';
+            }
+        }
+
+        function saveBudgetLimit() {
+            const val = document.getElementById('input-budget').value;
+            if (val < 0) return alert('Limit anggaran tidak boleh minus!');
+            
+            const storageKey = `budget_${currentUserEmail}_${kategoriAktif}`;
+            localStorage.setItem(storageKey, val || 0);
+            alert(`Sukses! Batas anggaran untuk kategori [ ${kategoriAktif} ] berhasil diperbarui.`);
+            renderData(); 
+        }
+
+        // 5. EKSPOR EXCEL / CSV
+        function exportLaporanCSV() {
+            const filtered = kategoriAktif === 'Semua' ? currentData : currentData.filter(d => d.kategori === kategoriAktif);
+            if (filtered.length === 0) return alert('Tidak ada data transaksi untuk diekspor!');
+
+            let csvLines = ["Tanggal,Akun/Kategori,Keterangan,Tipe,Jumlah Nominal (Rp)"];
+            filtered.forEach(item => {
+                csvLines.push(`"${item.tanggal}","${item.kategori}","${item.keterangan.replace(/"/g, '""')}","${item.tipe.toUpperCase()}",${item.jumlah}`);
+            });
+
+            const csvString = "\uFEFF" + csvLines.join("\n"); 
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", `Laporan_Kas_${kategoriAktif.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toLocaleDateString('id-ID')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 6. PROTEKSI SECURE LOGIN & INITIAL LOAD
+        async function checkLogin() {
+            try {
+                const res = await fetch('/api/auth/me');
+                const data = await res.json();
+                
+                if (!res.ok || !data.loggedIn) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                currentUserEmail = data.email;
+                document.getElementById('user-display').innerText = currentUserEmail;
+                
+                const inisial = currentUserEmail.substring(0, 1).toUpperCase();
+                document.getElementById('avatar-text').innerText = inisial;
+                
+                const localAvatar = localStorage.getItem('avatar_' + currentUserEmail);
+                displayAvatar(localAvatar);
+
+                const savedTheme = localStorage.getItem('user_theme_pref');
+                changeThemeMode(savedTheme ? savedTheme : 'malam');
+
+                startLiveClock();
+                loadData();
+            } catch (err) {
+                window.location.href = '/login.html';
+            }
+        }
+
+        function uploadAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Image = e.target.result;
+                    localStorage.setItem('avatar_' + currentUserEmail, base64Image);
+                    displayAvatar(base64Image);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function displayAvatar(base64Data) {
+            const textEl = document.getElementById('avatar-text');
+            const imgEl = document.getElementById('avatar-img');
+            if (base64Data) {
+                imgEl.src = base64Data;
+                imgEl.classList.remove('hidden');
+                textEl.classList.add('hidden');
+            } else {
+                imgEl.classList.add('hidden');
+                textEl.classList.remove('hidden');
+            }
+        }
+
+        async function logout() {
+            if(confirm('Apakah kamu ingin keluar dari aplikasi Buku Kas?')) {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/login.html';
+            }
+        }
+
+        async function loadData() {
+            try {
+                const res = await fetch('/api/kas');
+                currentData = await res.json();
+                renderData();
+            } catch (err) {
+                alert('Gagal mengambil data kas: ' + err.message);
+            }
+        }
+
+        function switchKategori(kategori) {
+            kategoriAktif = kategori;
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = activeTheme === 'siang' || activeTheme === 'sore'
+                    ? "tab-btn px-4 py-2 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-200/60 transition-all"
+                    : "tab-btn px-4 py-2 rounded-xl text-sm font-bold text-slate-400 hover:bg-slate-800 hover:text-white transition-all";
+            });
+
+            const activeBtn = document.getElementById(`tab-${kategori}`);
+            activeBtn.className = "tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-indigo-600 text-white shadow-md";
+
+            if (kategori !== 'Semua') { document.getElementById('kategori').value = kategori; }
+            document.getElementById('label-kategori-aktif').innerText = kategori === 'Semua' ? 'Semua Gabungan' : kategori;
+            renderData();
+        }
+
+        function renderData() {
+            tableBody.innerHTML = '';
+            const filtered = kategoriAktif === 'Semua' ? currentData : currentData.filter(d => d.kategori === kategoriAktif);
+
+            if (filtered.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 font-medium">Belum ada transaksi pada kelompok kas ini.</td></tr>`;
+                txtPemasukan.innerText = "Rp 0";
+                txtPengeluaran.innerText = "Rp 0";
+                txtSaldo.innerText = "Rp 0";
+                refreshFinancialChart([]);
+                checkAndRenderBudget(0);
+                return;
+            }
+
+            let totalMasuk = 0;
+            let totalKeluar = 0;
+
+            filtered.forEach(item => {
+                if (item.tipe === 'pemasukan') totalMasuk += item.jumlah;
+                else totalKeluar += item.jumlah;
+
+                let rowTextClass = "text-slate-300";
+                let rowBorderClass = "border-slate-700/50";
+                if(activeTheme === 'siang') { rowTextClass = "text-slate-700"; rowBorderClass = "border-slate-200"; }
+                if(activeTheme === 'sore') { rowTextClass = "text-amber-950"; rowBorderClass = "border-orange-200/60"; }
+
+                const row = document.createElement('tr');
+                row.className = `hover:bg-slate-700/20 border-b ${rowBorderClass} ${rowTextClass}`;
+                if(activeTheme === 'siang' || activeTheme === 'sore') row.className = `hover:bg-black/5 border-b ${rowBorderClass} ${rowTextClass}`;
+
+                row.innerHTML = `
+                    <td class="p-4 font-semibold opacity-80">${item.tanggal}</td>
+                    <td class="p-4 font-bold text-indigo-500">${item.kategori}</td>
+                    <td class="p-4 font-medium">${item.keterangan}</td>
+                    <td class="p-4"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${item.tipe === 'pemasukan' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">${item.tipe === 'pemasukan' ? 'PEMASUKAN' : 'PENGELUARAN'}</span></td>
+                    <td class="p-4 font-bold ${item.tipe === 'pemasukan' ? 'text-emerald-400' : 'text-rose-400'}">Rp ${item.jumlah.toLocaleString('id-ID')}</td>
+                    <td class="p-4 text-center flex justify-center gap-1.5 no-print">
+                        <button onclick="editData(${item.id})" class="bg-amber-500/15 hover:bg-amber-500/25 text-amber-500 font-bold px-3 py-1.5 rounded-lg text-xs transition">Edit</button>
+                        <button onclick="deleteData(${item.id})" class="bg-rose-500/15 hover:bg-rose-500/25 text-rose-700 font-bold px-3 py-1.5 rounded-lg text-xs transition">Hapus</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            txtPemasukan.innerText = `Rp ${totalMasuk.toLocaleString('id-ID')}`;
+            txtPengeluaran.innerText = `Rp ${totalKeluar.toLocaleString('id-ID')}`;
+            txtSaldo.innerText = `Rp ${(totalMasuk - totalKeluar).toLocaleString('id-ID')}`;
+
+            refreshFinancialChart(filtered);
+            checkAndRenderBudget(totalKeluar);
+        }
+
+        // 7. 🛠️ FITUR EKSPOR PDF ANTI-POTONG (FIXED LOGIC)
+        function exportLaporanPDF() {
+            document.getElementById('pdf-user-display').innerText = `"${currentUserEmail}"`;
+            document.getElementById('pdf-subtitle').innerText = `Kategori Pembukuan: ${kategoriAktif === 'Semua' ? 'Semua Gabungan' : kategoriAktif}`;
+            document.getElementById('pdf-timestamp').innerText = `Dicetak otomatis pada: ${new Date().toLocaleString('id-ID')} WIB`;
+
+            const element = document.getElementById('laporan-cetak-area');
+            
+            // Suntikkan style khusus cetak untuk menonaktifkan "overflow:hidden/auto" yang merusak paging pdf
+            const style = document.createElement('style');
+            style.id = 'pdf-print-styles';
+            style.innerHTML = `
+                .no-print { display: none !important; }
+                .print-header { display: block !important; }
+                #laporan-cetak-area { padding: 30px !important; background: #ffffff !important; color: #000000 !important; }
+                .bg-slate-800, #table-box { background: #ffffff !important; border: 1px solid #cbd5e1 !important; color: #000000 !important; overflow: visible !important; }
+                #table-scroll-wrapper { overflow: visible !important; }
+                .text-slate-200, .text-slate-300, .text-slate-400 { color: #334155 !important; }
+                tr { border-bottom: 1px solid #e2e8f0 !important; color: #334155 !important; page-break-inside: avoid !important; }
+            `;
+            document.head.appendChild(style);
+
+            // Set konfigurasi html2pdf aman dari bug cutoff & scroll offset
+            const opsiSetting = {
+                margin:       0.4,
+                filename:     `Laporan_Uang_Kas_${currentUserEmail.split('@')[0]}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 }, // Paksa scrollY ke 0 agar tidak kepotong layar saat scroll kebawah
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } // Hindari potong baris di tengah-tengah kertas
+            };
+
+            html2pdf().set(opsiSetting).from(element).save().then(() => {
+                const sheet = document.getElementById('pdf-print-styles');
+                if(sheet) sheet.remove();
+            });
+        }
+
+        // CRUD Simpan Data
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('trans-id').value;
+            const payload = {
+                tanggal: document.getElementById('tanggal').value,
+                kategori: document.getElementById('kategori').value,
+                keterangan: document.getElementById('keterangan').value,
+                tipe: document.getElementById('tipe').value,
+                jumlah: document.getElementById('jumlah').value,
+            };
+
+            const url = id ? `/api/kas/${id}` : '/api/kas';
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.error);
+                
+                alert(result.message);
+                resetForm();
+                loadData();
+            } catch (err) {
+                alert('Gagal memproses kas: ' + err.message);
+            }
+        });
+
+        function editData(id) {
+            const item = currentData.find(d => d.id === id);
+            if (!item) return;
+
+            document.getElementById('trans-id').value = item.id;
+            document.getElementById('tanggal').value = item.tanggal;
+            document.getElementById('kategori').value = item.kategori;
+            document.getElementById('keterangan').value = item.keterangan;
+            document.getElementById('tipe').value = item.tipe;
+            document.getElementById('jumlah').value = item.jumlah;
+
+            formTitle.innerHTML = `<span class="h-2 w-2 rounded-full bg-amber-400"></span> Mode Edit Transaksi (ID: ${item.id})`;
+            btnBatal.classList.remove('hidden');
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        async function deleteData(id) {
+            if (confirm('Apakah kamu yakin ingin menghapus data catatan kas ini secara permanen?')) {
+                try {
+                    const res = await fetch(`/api/kas/${id}`, { method: 'DELETE' });
+                    const result = await res.json();
+                    alert(result.message);
+                    loadData();
+                } catch (err) {
+                    alert('Gagal menghapus data: ' + err.message);
+                }
+            }
+        }
+
+        function resetForm() {
+            form.reset();
+            document.getElementById('trans-id').value = '';
+            formTitle.innerHTML = `<span class="h-2 w-2 rounded-full bg-indigo-600"></span> Tambah Data Baru`;
+            btnBatal.classList.add('hidden');
+            if(kategoriAktif !== 'Semua') { document.getElementById('kategori').value = kategoriAktif; }
+        }
+
+        btnBatal.addEventListener('click', resetForm);
+        window.onload = checkLogin;
+    </script>
+</body>
+</html>
