@@ -19,19 +19,19 @@ app.use(session({
     cookie: { maxAge: 24 * 60 * 60 * 1000 } // Sesi aktif selama 1 hari
 }));
 
-// ================= CONNECTION POOL (AUTO-SWITCH RAILWAY VS LOCALHOST) =================
+// ================= KONEKSI LANGSUNG DIKUNCI KE VARIABEL CLEVER CLOUD =================
 const db = mysql.createPool({
-    host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
-    user: process.env.MYSQLUSER || process.env.DB_USER || 'root',      
-    password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || '',      
-    database: process.env.MYSQLDATABASE || process.env.DB_NAME || 'uang-kas-digital',
-    port: process.env.MYSQLPORT || process.env.DB_PORT || 3306,
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,      
+    password: process.env.DB_PASSWORD,      
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT || 3306,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
 });
 
-console.log('Mantap! Connection Pool Database sudah disiapkan.');
+console.log('Mantap! Connection Pool Database Clever Cloud sudah disiapkan.');
 
 // Middleware untuk proteksi halaman/API kas (Harus Login)
 const checkAuth = (req, res, next) => {
@@ -175,5 +175,5 @@ app.get('/api/ekspor-csv', checkAuth, (req, res) => {
     });
 });
 
-// Binding host '0.0.0.0' agar port bisa dibuka oleh Railway untuk publik
+// Binding ke host 0.0.0.0
 app.listen(PORT, '0.0.0.0', () => console.log(`Server aktif di port: ${PORT}`));
