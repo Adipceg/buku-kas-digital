@@ -19,8 +19,7 @@ app.use(session({
     cookie: { maxAge: 24 * 60 * 60 * 1000 } // Sesi aktif selama 1 hari
 }));
 
-// ================= PERBAIKAN UTAMA: CONNECTION POOL ANTI-CLOSED STATE =================
-// Menggunakan createPool agar otomatis menjaga koneksi tetap hidup ke Clever Cloud/Local
+// ================= CONNECTION POOL (SUDAH FIXED ANTI-CRASH) =================
 const db = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',      
