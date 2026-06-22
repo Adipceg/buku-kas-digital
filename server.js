@@ -175,4 +175,5 @@ app.get('/api/ekspor-csv', checkAuth, (req, res) => {
     });
 });
 
-app.listen(PORT, () => console.log(`Server aktif di port: ${PORT}`));
+// ================= PERBAIKAN PENTING: MENAMBAHKAN HOST '0.0.0.0' AGAR MENERIMA KONEKSI RAILWAY =================
+app.listen(PORT, '0.0.0.0', () => console.log(`Server aktif di port: ${PORT}`));
